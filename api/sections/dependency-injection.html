@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Dependency Injection - Cydran Guide</title>
+  <style>:root { --bg:#f7f4ef; --panel:#ffffff; --ink:#1e1b16; --muted:#6b5f52; --accent:#2d6a4f; --border:#e7ded3; }
+*{box-sizing:border-box}
+body{margin:0;font-family:Georgia, 'Times New Roman', serif;color:var(--ink);background:radial-gradient(1200px 600px at 10% -10%, #fff7e6, var(--bg));line-height:1.6}
+header{padding:24px 20px;border-bottom:2px solid var(--border);background:linear-gradient(90deg,#fef6e4,#fff)}
+header h1{margin:0 0 8px;font-size:28px;letter-spacing:.5px}
+header p{margin:0;color:var(--muted)}
+main{max-width:1000px;margin:0 auto;padding:20px}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+nav a{padding:6px 10px;border:1px solid var(--border);border-radius:999px;text-decoration:none;color:var(--ink);background:#fff}
+section{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.06)}
+pre,code{font-family:'Courier New', Courier, monospace;font-size:13px;background:#f5f1eb;border:1px solid var(--border);border-radius:6px}
+pre{padding:10px;overflow-x:auto}
+code{padding:0 4px}</style>
+</head>
+<body>
+  <header>
+    <h1>Dependency Injection</h1>
+    <p>From CYDRAN_GUIDE.md</p>
+  </header>
+  <main>
+    <nav>
+      <a href='../index.html'>All Sections</a>
+      <a href='sections/table-of-contents.html'>Table of Contents</a><a href='sections/overview.html'>Overview</a><a href='sections/core-concepts.html'>Core Concepts</a><a href='sections/getting-started.html'>Getting Started</a><a href='sections/components.html'>Components</a><a href='sections/templates.html'>Templates</a><a href='sections/data-binding.html'>Data Binding</a><a href='sections/messaging-communication.html'>Messaging & Communication</a><a href='sections/dependency-injection.html'>Dependency Injection</a><a href='sections/lifecycle-hooks.html'>Lifecycle Hooks</a><a href='sections/advanced-features.html'>Advanced Features</a><a href='sections/state-machine.html'>State Machine</a><a href='sections/library-exports-constants-and-enums.html'>Library Exports (Constants and Enums)</a><a href='sections/library-exports-core-api.html'>Library Exports (Core API)</a><a href='sections/best-practices.html'>Best Practices</a><a href='sections/project-example-hello-world.html'>Project Example: Hello World</a><a href='sections/project-example-todoapp-from-todoapp-js.html'>Project Example: TodoApp (from todoapp.js)</a><a href='sections/summary.html'>Summary</a><a href='sections/new-project-checklist.html'>New Project Checklist</a><a href='sections/resources.html'>Resources</a><a href='sections/end-to-end-hello-world-example.html'>End-to-End Hello World Example</a>
+    </nav>
+    <section>
+      <h3>Registering Components</h3>
+<p>In the root capability function, register components with the IoC container:</p>
+<p>@@CODEBLOCK0@@</p>
+<p>**Singleton vs Prototype**</p>
+<ul>
+<li>**Singleton**: One shared instance for the entire app. Use for services, repositories, and root-level components that should be unique (e.g., `TodoRepo`, the root `App` component).</li>
+<li>**Prototype**: A new instance is created each time the container is asked for one. Use for components that appear multiple times (e.g., list items like `TodoItem`, dialog instances, or routed views).</li>
+</ul>
+<p>Register a prototype that receives a transmitter:</p>
+<p>@@CODEBLOCK0@@</p>
+<h3>ArgumentsBuilder</h3>
+<p>Use `argumentsBuilder` (aliased as `ab`) to configure component dependencies:</p>
+<p>@@CODEBLOCK0@@</p>
+<h4>Passing Constructor Arguments (withConstant / withArgument)</h4>
+<p>Use `withConstant(...)` to pass literal values into the constructor. Use `withArgument(index)` only when you plan to pass instance arguments at resolve-time.</p>
+<pre><code>const ab = cydran.argumentsBuilder;
+
+function rootCapability(context) {
+  context.registerPrototype('widgetHorizontal', Widget,
+    ab().withConstant(TEMPLATE_HORIZONTAL).build()
+  );
+
+  context.registerPrototype('widgetVertical', Widget,
+    ab().withConstant(TEMPLATE_VERTICAL).build()
+  );
+}</code></pre>
+<h3>Injected Dependencies</h3>
+<p>Components defined with dependencies receive them in the constructor.</p>
+<h3>Accessing Singletons</h3>
+<p>Get registered singletons:</p>
+<p>@@CODEBLOCK0@@</p>
+<p>---</p>
+    </section>
+  </main>
+</body>
+</html>

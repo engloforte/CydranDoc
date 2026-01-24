@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Templates - Cydran Guide</title>
+  <style>:root { --bg:#f7f4ef; --panel:#ffffff; --ink:#1e1b16; --muted:#6b5f52; --accent:#2d6a4f; --border:#e7ded3; }
+*{box-sizing:border-box}
+body{margin:0;font-family:Georgia, 'Times New Roman', serif;color:var(--ink);background:radial-gradient(1200px 600px at 10% -10%, #fff7e6, var(--bg));line-height:1.6}
+header{padding:24px 20px;border-bottom:2px solid var(--border);background:linear-gradient(90deg,#fef6e4,#fff)}
+header h1{margin:0 0 8px;font-size:28px;letter-spacing:.5px}
+header p{margin:0;color:var(--muted)}
+main{max-width:1000px;margin:0 auto;padding:20px}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+nav a{padding:6px 10px;border:1px solid var(--border);border-radius:999px;text-decoration:none;color:var(--ink);background:#fff}
+section{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.06)}
+pre,code{font-family:'Courier New', Courier, monospace;font-size:13px;background:#f5f1eb;border:1px solid var(--border);border-radius:6px}
+pre{padding:10px;overflow-x:auto}
+code{padding:0 4px}</style>
+</head>
+<body>
+  <header>
+    <h1>Templates</h1>
+    <p>From CYDRAN_GUIDE.md</p>
+  </header>
+  <main>
+    <nav>
+      <a href='../index.html'>All Sections</a>
+      <a href='sections/table-of-contents.html'>Table of Contents</a><a href='sections/overview.html'>Overview</a><a href='sections/core-concepts.html'>Core Concepts</a><a href='sections/getting-started.html'>Getting Started</a><a href='sections/components.html'>Components</a><a href='sections/templates.html'>Templates</a><a href='sections/data-binding.html'>Data Binding</a><a href='sections/messaging-communication.html'>Messaging & Communication</a><a href='sections/dependency-injection.html'>Dependency Injection</a><a href='sections/lifecycle-hooks.html'>Lifecycle Hooks</a><a href='sections/advanced-features.html'>Advanced Features</a><a href='sections/state-machine.html'>State Machine</a><a href='sections/library-exports-constants-and-enums.html'>Library Exports (Constants and Enums)</a><a href='sections/library-exports-core-api.html'>Library Exports (Core API)</a><a href='sections/best-practices.html'>Best Practices</a><a href='sections/project-example-hello-world.html'>Project Example: Hello World</a><a href='sections/project-example-todoapp-from-todoapp-js.html'>Project Example: TodoApp (from todoapp.js)</a><a href='sections/summary.html'>Summary</a><a href='sections/new-project-checklist.html'>New Project Checklist</a><a href='sections/resources.html'>Resources</a><a href='sections/end-to-end-hello-world-example.html'>End-to-End Hello World Example</a>
+    </nav>
+    <section>
+<h3>Template Definition</h3>
+<p>Templates are defined as HTML strings inside `<template>` elements:</p>
+<p>@@CODEBLOCK0@@</p>
+<h3>One Top-Level Node Required</h3>
+<p>Each template must have exactly one root element. Text and comment nodes at the top level are not permitted.</p>
+<p>Valid:</p>
+<pre><code>&lt;template id="example"&gt;
+  &lt;div class="wrapper"&gt;
+    &lt;h1&gt;{{m().title}}&lt;/h1&gt;
+    &lt;p&gt;{{m().body}}&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/template&gt;</code></pre>
+<p>Invalid (multiple top-level nodes):</p>
+<pre><code>&lt;template id="example"&gt;
+  &lt;h1&gt;{{m().title}}&lt;/h1&gt;
+  &lt;p&gt;{{m().body}}&lt;/p&gt;
+&lt;/template&gt;</code></pre>
+<h3>What <code>super(...)</code> Accepts</h3>
+<p><code>super(...)</code> can take a template string, an <code>HTMLElement</code>, or a renderer object with a <code>render()</code> function.</p>
+<h3>Retrieving Templates</h3>
+<p>Use a helper function to retrieve template HTML:</p>
+<p>@@CODEBLOCK0@@</p>
+<p>You can also align template ids to component names:</p>
+<p>@@CODEBLOCK0@@</p>
+<h3>Template Syntax</h3>
+<h4>Data Binding (`{{ }}`)</h4>
+<p>Reactive interpolation. The expression is evaluated in component scope and updates when the value changes. You can use `m()`, `v()`, `s()`, and `p()`.</p>
+<p>@@CODEBLOCK0@@</p>
+<h4>Alternate Binding (`[[ ]]`)</h4>
+<p>`[[ ]]` is supported as a one-time interpolation. It writes the initial value but does not update on later changes.</p>
+<pre><code>&lt;div aria-valuenow="[[m().value]]"&gt;&lt;/div&gt;
+&lt;span&gt;[[m().label]]&lt;/span&gt;</code></pre>
+<h4>Property Binding (`c-model`)</h4>
+<p>Two-way binding to model properties:</p>
+<p>@@CODEBLOCK0@@</p>
+<h4>Event Binding (`c-on*`)</h4>
+<p>Bind to DOM events:</p>
+<p>@@CODEBLOCK0@@</p>
+<p>When the event fires, Cydran evaluates the expression in component scope, invokes the handler, and then runs a digest to refresh bindings.</p>
+<h4>Conditional Rendering (`c-if`)</h4>
+<p>Show/hide elements based on conditions:</p>
+<p>@@CODEBLOCK0@@</p>
+<h4>List Rendering (`c-each`)</h4>
+<p>Render lists of items:</p>
+<p>@@CODEBLOCK0@@</p>
+<p>For <code>c-each</code> on non-<code>&lt;template&gt;</code> elements, include exactly one child <code>&lt;template c-type="item"&gt;</code> that defines the repeated markup:</p>
+<pre><code>&lt;div c-each="m().items" c-each-mode="none"&gt;
+  &lt;template c-type="item"&gt;
+    &lt;div class="row"&gt;{{v().label}}&lt;/div&gt;
+  &lt;/template&gt;
+&lt;/div&gt;</code></pre>
+<p>For stable repeat ids, set <code>c-each-idkey="id"</code> to the item field that uniquely identifies each row:</p>
+<pre><code>&lt;div c-each="m().items" c-each-mode="none" c-each-idkey="id"&gt;
+  &lt;template c-type="item"&gt;
+    &lt;div class="row"&gt;{{v().label}}&lt;/div&gt;
+  &lt;/template&gt;
+&lt;/div&gt;</code></pre>
+<p>For better repeat performance, prefer <code>c-each-mode="generated"</code> with <code>c-each-idkey</code> so Cydran can reuse elements by id.</p>
+<h4>Class Binding (`c-class`)</h4>
+<p>Dynamically apply CSS classes:</p>
+<p>@@CODEBLOCK0@@</p>
+<p><code>c-class</code> merges with existing class names. Include class keys with <code>false</code> to ensure they are removed.</p>
+<h4>Attribute Binding</h4>
+<p>@@CODEBLOCK0@@</p>
+<p>For non-`c-` attributes, use `{{ ... }}` for reactive updates. Use `[[ ... ]]` for write-once values:</p>
+<pre><code>&lt;div aria-valuenow="{{m().value}}"&gt;&lt;/div&gt;
+&lt;div style="{{ 'width: ' + m().value + '%' }}"&gt;&lt;/div&gt;
+
+&lt;div aria-valuenow="[[m().value]]"&gt;&lt;/div&gt;
+&lt;div style="[[ 'width: ' + m().value + '%' ]]"&gt;&lt;/div&gt;</code></pre>
+<h4>Focus Management (`c-force-focus`)</h4>
+<p>@@CODEBLOCK0@@</p>
+<h3>c-region Modifiers</h3>
+<p>The `c-region` tag supports these modifiers (attributes):</p>
+<p>| Attribute | Purpose | Notes |</p>
+<p>|----------|---------|-------|</p>
+<p>| `name` | Names the region so it can be targeted from code | If omitted, Cydran generates an anonymous region name |</p>
+<p>| `path` | Requestable object path to a component in the IoC context | If set, the region auto-loads that component on mount |</p>
+<p>| `value` | Expression to provide item/value context to the child component | Used as the region's item function (`setItemFn`) |</p>
+<p>| `lock` | Locks the region from further updates | Boolean; if `true` updates to the region throw a LockedRegionError |</p>
+<p>Notes:</p>
+<ul>
+<li>If `path` is set and `name` is not, the region is locked by default (cannot be changed later).</li>
+<li>`lock` is treated as a boolean attribute.</li>
+</ul>
+<h3>Series Placement (c-series)</h3>
+<p>For multiple child components, use `c-series` plus `forSeries(...)`.</p>
+<p>Template:</p>
+<p>@@CODEBLOCK0@@</p>
+<p>Code placement APIs:</p>
+<p>@@CODEBLOCK0@@</p>
+<p>Notes:</p>
+<ul>
+<li>Series prevent duplicate components.</li>
+<li>`getAt(index)`, `contains(component)`, `hasComponents()`, and `isEmpty()` help inspect series state.</li>
+</ul>
+<h3>Template Context Functions</h3>
+<p>Within templates, you can use:</p>
+<p>| Function | Purpose | Example |</p>
+<p>|----------|---------|---------|</p>
+<p>| `m()` | Access view model | `m().greeting` |</p>
+<p>| `v()` | Access component value (in iterators) | `v().title` |</p>
+<p>| `s()` | Access scope functions | `s().pluralize('item', 3)` |</p>
+<p>| `p()` | Access parameters (in event handlers) | `p().$event` |</p>
+<p>| `c-region` | Named region placeholder | `<c-region name="messageRegion"></c-region>` |</p>
+<p>---</p>
+    </section>
+  </main>
+</body>
+</html>

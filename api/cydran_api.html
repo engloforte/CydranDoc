@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cydran API Reference (Project1)</title>
+  <style>
+    :root {
+      --bg: #f7f4ef;
+      --panel: #ffffff;
+      --ink: #1e1b16;
+      --muted: #6b5f52;
+      --accent: #2d6a4f;
+      --accent-2: #e9c46a;
+      --border: #e7ded3;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 600px at 10% -10%, #fff7e6, var(--bg));
+      line-height: 1.6;
+    }
+    header {
+      padding: 32px 20px 16px;
+      border-bottom: 2px solid var(--border);
+      background: linear-gradient(90deg, #fef6e4, #fff);
+    }
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: 0.5px;
+    }
+    header p {
+      margin: 0;
+      color: var(--muted);
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 900px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    }
+    section h2 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      border-left: 4px solid var(--accent);
+      padding-left: 10px;
+    }
+    code, pre {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 13px;
+      background: #f5f1eb;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    code { padding: 0 4px; }
+    pre {
+      padding: 10px;
+      overflow-x: auto;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--accent-2);
+      color: #3a2d19;
+      font-size: 12px;
+      margin-right: 6px;
+    }
+    ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+    li { margin: 6px 0; }
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Cydran API Reference</h1>
+    <p>Project1 quick reference for the APIs used by HelloWorld and SimpleMessage.</p>
+  </header>
+  <main>
+    <div class="grid">
+      <section>
+        <h2>Stage Setup</h2>
+        <p><span class="tag">create</span>Initialize the app and set the root component.</p>
+        <pre><code>const stage = cydran.create('#app', {}, rootCapability);
+stage.addInitializer(null, s =&gt; {
+  s.setComponentByObjectId('app');
+});
+stage.start();</code></pre>
+        <p class="note">TodoApp uses a more specific selector:</p>
+        <pre><code>const stage = create('body&gt;div#appbody', PROPERTIES, rootCapability);</code></pre>
+      </section>
+
+      <section>
+        <h2>Component Registration</h2>
+        <p><span class="tag">IoC</span>Singleton for the root, prototype for children.</p>
+        <pre><code>function rootCapability(context) {
+  context.registerSingleton('app', HelloWorld);
+  context.registerPrototype('simpleMessage', SimpleMessage);
+}</code></pre>
+        <p class="note">Inject dependencies with <code>argumentsBuilder</code>:</p>
+        <pre><code>context.registerPrototype(TodoItem.name, TodoItem,
+  ab().withTransmitter().build()
+);
+context.registerSingleton(TodoRepo.name, TodoRepo,
+  ab().withLogger(`${App.name}.Repo`).withTransmitter().build()
+);</code></pre>
+        <p class="note">Pass constructor values with <code>withConstant(...)</code>. Use <code>withArgument(index)</code> only when resolving with instance arguments:</p>
+        <pre><code>context.registerPrototype('widgetHorizontal', Widget,
+  ab().withConstant(TEMPLATE_HORIZONTAL).build()
+);
+context.registerPrototype('widgetVertical', Widget,
+  ab().withConstant(TEMPLATE_VERTICAL).build()
+);</code></pre>
+      </section>
+
+      <section>
+        <h2>Templates</h2>
+        <p><span class="tag">template</span>Retrieve template HTML by id.</p>
+        <pre><code>const template = id =&gt; {
+  const el = document.querySelector(`template[id="${id}"]`);
+  return el ? el.innerHTML.trim() : '';
+};</code></pre>
+        <p class="note">Template ids used: <code>hello-world</code>, <code>simple-message</code>.</p>
+        <p class="note">TodoApp aligns template ids to component names:</p>
+        <pre><code>super(template(App.name.toLowerCase()));</code></pre>
+        <p class="note"><code>super(...)</code> accepts a template string, an <code>HTMLElement</code>, or a renderer object with <code>render()</code>.</p>
+        <p class="note">Templates must have exactly one top-level element. Text/comment nodes at the top level are not permitted.</p>
+      </section>
+
+      <section>
+        <h2>Regions</h2>
+        <p><span class="tag">c-region</span>Named placeholder for child components.</p>
+        <pre><code>&lt;c-region name="messageRegion"&gt;&lt;/c-region&gt;</code></pre>
+        <pre><code>// Populate by object id
+this.$c().regions().setByObjectId('messageRegion', 'simpleMessage');
+
+// Clear region
+this.$c().regions().set('messageRegion', null);</code></pre>
+      </section>
+
+      <section>
+        <h2>Messaging</h2>
+        <p><span class="tag">channel</span>Scoped messages between components.</p>
+        <pre><code>const APP_CHANNEL = 'APP';
+const HIDE_MESSAGE = 'hideMessage';</code></pre>
+        <p class="note">Send from child to parent:</p>
+        <pre><code>this.$c()
+  .send(HIDE_MESSAGE)
+  .onChannel(APP_CHANNEL)
+  .withPropagation(cydran.To.PARENT);</code></pre>
+        <p class="note">Receive in parent:</p>
+        <pre><code>this.$c().onMessage(HIDE_MESSAGE)
+  .forChannel(APP_CHANNEL)
+  .invoke(() =&gt; this.hideMessage());</code></pre>
+        <p class="note">TodoItem uses a transmitter:</p>
+        <pre><code>this.txmitr.send(To.GLOBALLY, TODO_CHANNEL, RMV_TODO, this.$c().getValue());</code></pre>
+      </section>
+
+      <section>
+        <h2>Component Context ($c)</h2>
+        <ul>
+          <li><code>onMessage(name).forChannel(channel).invoke(fn)</code></li>
+          <li><code>send(name).onChannel(channel).withPropagation(To.PARENT)</code></li>
+          <li><code>regions().set(name, component)</code></li>
+          <li><code>regions().setByObjectId(name, objectId)</code></li>
+          <li><code>regions().get(name)</code></li>
+          <li><code>regions().has(name)</code></li>
+          <li><code>onExpressionValueChange(expr, fn)</code></li>
+          <li><code>forSeries(name)</code></li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>$c() Full API</h2>
+        <pre><code>getContext()
+getValue()
+getObject(name, ...args)
+getLogger()
+getEl()
+getId()
+getName()
+getParent()
+getPrefix()
+getWatchScope()
+scope()
+properties()
+metadata()
+
+onExpressionValueChange(expr, callback, [thisArg], [mutable])
+onMessage(messageName)
+onInterval(delayMs)
+send(messageName, [payload], [startFrom])
+tell(name, payload)
+sync()
+evaluate(expression)
+isMounted()
+isConnected()
+
+regions()
+forSeries(name)
+forElement(name)
+forForm(name)
+forForms()
+createFilter(expression)</code></pre>
+      </section>
+
+      <section>
+        <h2>Regions API</h2>
+        <pre><code>regions().has(name)
+regions().get(name)
+regions().set(name, componentOrNull)
+regions().setByObjectId(name, objectId, [fallbackObjectId])</code></pre>
+      </section>
+
+      <section>
+        <h2>Lifecycle Hooks</h2>
+        <ul>
+          <li><code>constructor()</code>: initialize state, watchers, messages</li>
+          <li><code>onMount()</code>: component attached to DOM</li>
+          <li><code>onUnmount()</code>: component removed from DOM</li>
+          <li><code>onRemount()</code>: component reinserted after unmount</li>
+          <li><code>$release()</code>: framework disposal hook</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Lifecycle State Machine</h2>
+        <svg viewBox="0 0 760 200" width="100%" height="200" role="img" aria-label="Component lifecycle state machine">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6 Z" fill="#2d6a4f"></path>
+            </marker>
+          </defs>
+          <circle cx="20" cy="43" r="6" fill="#2d6a4f"></circle>
+          <text x="36" y="48" text-anchor="start" font-size="12" fill="#6b5f52">start</text>
+
+          <rect x="70" y="20" width="140" height="46" rx="8" fill="#ffffff" stroke="#e7ded3"></rect>
+          <text x="140" y="48" text-anchor="middle" font-size="14" fill="#1e1b16">Constructed</text>
+
+          <rect x="240" y="20" width="140" height="46" rx="8" fill="#ffffff" stroke="#e7ded3"></rect>
+          <text x="310" y="48" text-anchor="middle" font-size="14" fill="#1e1b16">Mounted</text>
+
+          <rect x="410" y="20" width="140" height="46" rx="8" fill="#ffffff" stroke="#e7ded3"></rect>
+          <text x="480" y="48" text-anchor="middle" font-size="14" fill="#1e1b16">Unmounted</text>
+
+          <rect x="580" y="20" width="140" height="46" rx="8" fill="#ffffff" stroke="#e7ded3"></rect>
+          <text x="650" y="48" text-anchor="middle" font-size="14" fill="#1e1b16">Disposed</text>
+
+          <line x1="24" y1="43" x2="70" y2="43" stroke="#2d6a4f" stroke-width="2" marker-end="url(#arrow)"></line>
+
+          <line x1="210" y1="43" x2="240" y2="43" stroke="#2d6a4f" stroke-width="2" marker-end="url(#arrow)"></line>
+          <text x="225" y="30" text-anchor="middle" font-size="12" fill="#6b5f52">onMount()</text>
+
+          <line x1="380" y1="43" x2="410" y2="43" stroke="#2d6a4f" stroke-width="2" marker-end="url(#arrow)"></line>
+          <text x="395" y="30" text-anchor="middle" font-size="12" fill="#6b5f52">onUnmount()</text>
+
+          <path d="M480,70 C480,120 310,120 310,70" fill="none" stroke="#2d6a4f" stroke-width="2" marker-end="url(#arrow)"></path>
+          <text x="395" y="122" text-anchor="middle" font-size="12" fill="#6b5f52">onRemount()</text>
+
+          <line x1="310" y1="10" x2="580" y2="10" stroke="#2d6a4f" stroke-width="2" marker-end="url(#arrow)"></line>
+          <text x="445" y="6" text-anchor="middle" font-size="12" fill="#6b5f52">$release()</text>
+        </svg>
+      </section>
+
+      <section>
+        <h2>State Machine API</h2>
+        <p><span class="tag">stateMachineBuilder</span> Configure lightweight state machines.</p>
+        <pre><code>const machine = cydran.stateMachineBuilder('IDLE')
+  .withState('IDLE', [model =&gt; { model.status = 'idle'; }])
+  .withState('RUNNING', [model =&gt; { model.status = 'running'; }])
+  .withTransition('IDLE', 'start', 'RUNNING', [
+    model =&gt; { model.startedAt = Date.now(); }
+  ])
+  .withTransition('RUNNING', 'stop', 'IDLE', [
+    model =&gt; { model.stoppedAt = Date.now(); }
+  ])
+  .build();
+
+const instance = machine.create({ status: 'idle' });
+machine.submit('start', instance);
+machine.submit('stop', instance);</code></pre>
+        <p class="note">Transitions can include an optional guard predicate.</p>
+      </section>
+
+      <section>
+        <h2>Template Bindings</h2>
+        <ul>
+          <li><code>{{m().greeting}}</code> and <code>{{m().notice}}</code> are reactive and update when values change</li>
+          <li><code>[[m().value]]</code> for one-time interpolation (write once, not reactive)</li>
+          <li><code>c-onclick="m().updateGreeting()"</code></li>
+          <li><code>c-enabled="!m().messageShown"</code></li>
+        </ul>
+        <p class="note"><code>{{ ... }}</code> expressions can reference <code>m()</code>, <code>v()</code>, <code>s()</code>, and <code>p()</code> in component scope.</p>
+        <p class="note"><code>c-on*</code> handlers run in component scope and trigger a digest after the handler executes so bindings update.</p>
+        <p class="note">For non-<code>c-</code> attributes, use <code>{{ ... }}</code> for reactive updates; <code>[[ ... ]]</code> is write-once.</p>
+        <p class="note">When using <code>c-each</code> on a non-<code>&lt;template&gt;</code> element, the element must contain exactly one child <code>&lt;template c-type="item"&gt;</code> for the repeated markup.</p>
+        <p class="note">If repeat items need a stable id, set <code>c-each-idkey="fieldName"</code>. The field must exist on each item and be string-convertible.</p>
+        <p class="note">For better repeat performance, use <code>c-each-mode="generated"</code> with <code>c-each-idkey</code> so Cydran can reuse elements by id.</p>
+        <p class="note"><code>c-class</code> merges with existing class names; include keys with <code>false</code> to remove classes.</p>
+      </section>
+
+      <section>
+        <h2>Filters</h2>
+        <p><span class="tag">c-each</span>Computed collections with parameters.</p>
+        <pre><code>this.filtered = this.$c().createFilter('m().todos')
+  .withPredicate(
+    "p(0) === 'all' || !v().completed && p(0) === 'active' || v().completed && p(0) === 'completed'",
+    'm().filterVisiblity'
+  )
+  .build();</code></pre>
+      </section>
+
+      <section>
+        <h2>Series Placement</h2>
+        <p><span class="tag">c-series</span>Place multiple child components.</p>
+        <pre><code>&lt;c-series name="items"&gt;&lt;/c-series&gt;</code></pre>
+        <pre><code>const series = this.$c().forSeries('items');
+series.insertFirst(component);
+series.insertLast(component);
+series.insertBefore(index, component);
+series.insertAfter(index, component);
+series.replace(oldComponent, newComponent);
+series.replaceAt(index, component);
+series.remove(component);
+series.removeAt(index);
+series.clear();</code></pre>
+      </section>
+
+      <section>
+        <h2>Properties</h2>
+        <p><span class="tag">PropertyKeys</span>Strict mode and logging configuration.</p>
+        <pre><code>const PROPERTIES = {
+  ['todo.person']: '',
+  [PropertyKeys.CYDRAN_STRICT_ENABLED]: true,
+  [PropertyKeys.CYDRAN_STRICT_STARTPHRASE]: 'Your motivational message',
+  [PropertyKeys.CYDRAN_LOG_LEVEL]: 'trace',
+  [PropertyKeys.CYDRAN_LOG_LABEL]: 'ctdmvc'
+};</code></pre>
+      </section>
+
+      <section>
+        <h2>Exported Enums</h2>
+        <p><span class="tag">constants</span>Core enums exposed by the library.</p>
+        <ul>
+          <li><code>PropertyKeys</code>: config keys for <code>create()</code></li>
+          <li><code>To</code>: message propagation targets</li>
+          <li><code>Events</code>: component lifecycle/mutation events</li>
+          <li><code>BehaviorFlags</code>: behavior flags</li>
+          <li><code>JSType</code>: JS type strings</li>
+          <li><code>ArgumentType</code>: IoC argument descriptors</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>PropertyKeys</h2>
+        <pre><code>CYDRAN_CLONE_MAX_EVALUATIONS
+CYDRAN_DIGEST_MAX_EVALUATIONS
+CYDRAN_EQUALS_MAX_EVALUATIONS
+CYDRAN_LAZY_STARTPHRASE
+CYDRAN_LOG_COLOR_PREFIX
+CYDRAN_LOG_LABEL
+CYDRAN_LOG_LABEL_VISIBLE
+CYDRAN_LOG_LEVEL
+CYDRAN_LOG_APPENDERS
+CYDRAN_LOG_ALLOW_SUPRESS_DEFAULT_APPENDER
+CYDRAN_LOG_PREAMBLE_ORDER
+CYDRAN_LOG_STRATEGY
+CYDRAN_OVERRIDE_WINDOW
+CYDRAN_STARTUP_SYNCHRONOUS
+CYDRAN_STRICT_ENABLED
+CYDRAN_STRICT_MESSAGE
+CYDRAN_STRICT_STARTPHRASE
+CYDRAN_STYLES_ENABLED</code></pre>
+      </section>
+
+      <section>
+        <h2>To</h2>
+        <pre><code>GLOBALLY
+CONTEXT
+DESCENDANTS
+IMMEDIATE_CHILDREN
+IMMEDIATE_CHILD_COMPONENTS
+PARENT
+PARENTS
+ROOT</code></pre>
+      </section>
+
+      <section>
+        <h2>Events</h2>
+        <pre><code>AFTER_CHILD_ADDED
+AFTER_CHILD_CHANGED
+AFTER_CHILD_REMOVED
+AFTER_PARENT_ADDED
+AFTER_PARENT_CHANGED
+AFTER_PARENT_REMOVED
+BEFORE_CHILD_ADDED
+BEFORE_CHILD_CHANGED
+BEFORE_CHILD_REMOVED
+BEFORE_PARENT_ADDED
+BEFORE_PARENT_CHANGED
+BEFORE_PARENT_REMOVED
+COMPONENT_NESTING_CHANGED
+CYDRAN_PREAPP_DISPOSAL</code></pre>
+      </section>
+
+      <section>
+        <h2>BehaviorFlags</h2>
+        <pre><code>PROPAGATION
+EXPRESSION_DISALLOWED</code></pre>
+      </section>
+
+      <section>
+        <h2>JSType</h2>
+        <pre><code>STR
+BOOL
+BIGINT
+NUM
+SYM
+FN
+OBJ
+UND</code></pre>
+      </section>
+
+      <section>
+        <h2>ArgumentType</h2>
+        <pre><code>OBJECT
+PROVIDER
+TRANSMITTER
+RECEIVER
+MESSAGE_SUBSCRIBER
+INSTANCE_ID
+INSTANCE_ID_PROVIDER
+CONTEXT
+ARGUMENT
+LOGGER
+FUNCTION
+CONSTANT
+PROPERTY
+PROPERTY_PROVIDER
+PROPERTY_SUBSCRIBER
+PROPERTY_FALLBACK_SUBSCRIBER
+SCOPE_ITEM</code></pre>
+      </section>
+
+      <section>
+        <h2>Core Exports</h2>
+        <ul>
+          <li><code>Component</code>, <code>ElementComponent</code></li>
+          <li><code>AbstractBehavior</code>, <code>AbstractValueBehavior</code></li>
+          <li><code>argumentsBuilder</code></li>
+          <li><code>create</code>, <code>noConflict</code></li>
+          <li><code>getLogger</code></li>
+          <li><code>stateMachineBuilder</code></li>
+          <li><code>uuidV4</code></li>
+          <li><code>setStrictTypeChecksEnabled</code></li>
+          <li><code>isDefined</code>, <code>requireNotNull</code>, <code>requireValid</code></li>
+          <li><code>merge</code>, <code>overlay</code>, <code>padLeft</code>, <code>padRight</code>, <code>enumKeys</code></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

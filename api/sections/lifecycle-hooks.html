@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Lifecycle Hooks - Cydran Guide</title>
+  <style>:root { --bg:#f7f4ef; --panel:#ffffff; --ink:#1e1b16; --muted:#6b5f52; --accent:#2d6a4f; --border:#e7ded3; }
+*{box-sizing:border-box}
+body{margin:0;font-family:Georgia, 'Times New Roman', serif;color:var(--ink);background:radial-gradient(1200px 600px at 10% -10%, #fff7e6, var(--bg));line-height:1.6}
+header{padding:24px 20px;border-bottom:2px solid var(--border);background:linear-gradient(90deg,#fef6e4,#fff)}
+header h1{margin:0 0 8px;font-size:28px;letter-spacing:.5px}
+header p{margin:0;color:var(--muted)}
+main{max-width:1000px;margin:0 auto;padding:20px}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+nav a{padding:6px 10px;border:1px solid var(--border);border-radius:999px;text-decoration:none;color:var(--ink);background:#fff}
+section{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.06)}
+pre,code{font-family:'Courier New', Courier, monospace;font-size:13px;background:#f5f1eb;border:1px solid var(--border);border-radius:6px}
+pre{padding:10px;overflow-x:auto}
+code{padding:0 4px}</style>
+</head>
+<body>
+  <header>
+    <h1>Lifecycle Hooks</h1>
+    <p>From CYDRAN_GUIDE.md</p>
+  </header>
+  <main>
+    <nav>
+      <a href='../index.html'>All Sections</a>
+      <a href='sections/table-of-contents.html'>Table of Contents</a><a href='sections/overview.html'>Overview</a><a href='sections/core-concepts.html'>Core Concepts</a><a href='sections/getting-started.html'>Getting Started</a><a href='sections/components.html'>Components</a><a href='sections/templates.html'>Templates</a><a href='sections/data-binding.html'>Data Binding</a><a href='sections/messaging-communication.html'>Messaging & Communication</a><a href='sections/dependency-injection.html'>Dependency Injection</a><a href='sections/lifecycle-hooks.html'>Lifecycle Hooks</a><a href='sections/advanced-features.html'>Advanced Features</a><a href='sections/state-machine.html'>State Machine</a><a href='sections/library-exports-constants-and-enums.html'>Library Exports (Constants and Enums)</a><a href='sections/library-exports-core-api.html'>Library Exports (Core API)</a><a href='sections/best-practices.html'>Best Practices</a><a href='sections/project-example-hello-world.html'>Project Example: Hello World</a><a href='sections/project-example-todoapp-from-todoapp-js.html'>Project Example: TodoApp (from todoapp.js)</a><a href='sections/summary.html'>Summary</a><a href='sections/new-project-checklist.html'>New Project Checklist</a><a href='sections/resources.html'>Resources</a><a href='sections/end-to-end-hello-world-example.html'>End-to-End Hello World Example</a>
+    </nav>
+    <section>
+      <h3>Component Lifecycle</h3>
+<h4>`constructor()`</h4>
+<ul>
+<li>Called when the component class is instantiated</li>
+<li>Initialize properties, set up watchers, subscribe to messages</li>
+</ul>
+<p>@@CODEBLOCK0@@</p>
+<h4>`onMount()`</h4>
+<ul>
+<li>Called after the component is mounted to the DOM</li>
+<li>Perfect for loading data, getting service references</li>
+</ul>
+<p>@@CODEBLOCK0@@</p>
+<h3>Hook Order</h3>
+<p>1. Component instantiation (`constructor`)</p>
+<p>2. Template compilation and DOM insertion</p>
+<p>3. `onMount()` called</p>
+<p>4. Component ready for interaction</p>
+<h3>Additional Lifecycle Hooks</h3>
+<ul>
+<li>`onUnmount()`: Called when the component is removed from the DOM.</li>
+<li>`onRemount()`: Called when the component is re-inserted after being unmounted.</li>
+<li>`$release()`: Disposal hook invoked by the framework when a component is torn down.</li>
+</ul>
+<h3>Lifecycle State Machine</h3>
+<svg viewBox="0 0 760 200" width="100%" height="200" role="img" aria-label="Component lifecycle state machine">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#2d6a4f"></path>
+    </marker>
+  </defs>
+  <circle cx="20" cy="43" r="6" fill="#2d6a4f"></circle>
+  <text x="36" y="48" text-anchor="start" font-size="12" fill="#6b5f52">start</text>
+
+  <rect x="70" y="20" width="140" height="46" rx="8" fill="#ffffff" stroke="#e7ded3"></rect>
+  <text x="140" y="48" text-anchor="middle" font-size="14" fill="#1e1b16">Constructed</text>
+
+  <rect x="240" y="20" width="140" height="46" rx="8" fill="#ffffff" stroke="#e7ded3"></rect>
+  <text x="310" y="48" text-anchor="middle" font-size="14" fill="#1e1b16">Mounted</text>
+
+  <rect x="410" y="20" width="140" height="46" rx="8" fill="#ffffff" stroke="#e7ded3"></rect>
+  <text x="480" y="48" text-anchor="middle" font-size="14" fill="#1e1b16">Unmounted</text>
+
+  <rect x="580" y="20" width="140" height="46" rx="8" fill="#ffffff" stroke="#e7ded3"></rect>
+  <text x="650" y="48" text-anchor="middle" font-size="14" fill="#1e1b16">Disposed</text>
+
+  <line x1="24" y1="43" x2="70" y2="43" stroke="#2d6a4f" stroke-width="2" marker-end="url(#arrow)"></line>
+
+  <line x1="210" y1="43" x2="240" y2="43" stroke="#2d6a4f" stroke-width="2" marker-end="url(#arrow)"></line>
+  <text x="225" y="30" text-anchor="middle" font-size="12" fill="#6b5f52">onMount()</text>
+
+  <line x1="380" y1="43" x2="410" y2="43" stroke="#2d6a4f" stroke-width="2" marker-end="url(#arrow)"></line>
+  <text x="395" y="30" text-anchor="middle" font-size="12" fill="#6b5f52">onUnmount()</text>
+
+  <path d="M480,70 C480,120 310,120 310,70" fill="none" stroke="#2d6a4f" stroke-width="2" marker-end="url(#arrow)"></path>
+  <text x="395" y="122" text-anchor="middle" font-size="12" fill="#6b5f52">onRemount()</text>
+
+  <line x1="310" y1="10" x2="580" y2="10" stroke="#2d6a4f" stroke-width="2" marker-end="url(#arrow)"></line>
+  <text x="445" y="6" text-anchor="middle" font-size="12" fill="#6b5f52">$release()</text>
+</svg>
+<p>---</p>
+    </section>
+  </main>
+</body>
+</html>

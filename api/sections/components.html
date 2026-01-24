@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Components - Cydran Guide</title>
+  <style>:root { --bg:#f7f4ef; --panel:#ffffff; --ink:#1e1b16; --muted:#6b5f52; --accent:#2d6a4f; --border:#e7ded3; }
+*{box-sizing:border-box}
+body{margin:0;font-family:Georgia, 'Times New Roman', serif;color:var(--ink);background:radial-gradient(1200px 600px at 10% -10%, #fff7e6, var(--bg));line-height:1.6}
+header{padding:24px 20px;border-bottom:2px solid var(--border);background:linear-gradient(90deg,#fef6e4,#fff)}
+header h1{margin:0 0 8px;font-size:28px;letter-spacing:.5px}
+header p{margin:0;color:var(--muted)}
+main{max-width:1000px;margin:0 auto;padding:20px}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+nav a{padding:6px 10px;border:1px solid var(--border);border-radius:999px;text-decoration:none;color:var(--ink);background:#fff}
+section{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;box-shadow:0 4px 14px rgba(0,0,0,0.06)}
+pre,code{font-family:'Courier New', Courier, monospace;font-size:13px;background:#f5f1eb;border:1px solid var(--border);border-radius:6px}
+pre{padding:10px;overflow-x:auto}
+code{padding:0 4px}</style>
+</head>
+<body>
+  <header>
+    <h1>Components</h1>
+    <p>From CYDRAN_GUIDE.md</p>
+  </header>
+  <main>
+    <nav>
+      <a href='../index.html'>All Sections</a>
+      <a href='sections/table-of-contents.html'>Table of Contents</a><a href='sections/overview.html'>Overview</a><a href='sections/core-concepts.html'>Core Concepts</a><a href='sections/getting-started.html'>Getting Started</a><a href='sections/components.html'>Components</a><a href='sections/templates.html'>Templates</a><a href='sections/data-binding.html'>Data Binding</a><a href='sections/messaging-communication.html'>Messaging & Communication</a><a href='sections/dependency-injection.html'>Dependency Injection</a><a href='sections/lifecycle-hooks.html'>Lifecycle Hooks</a><a href='sections/advanced-features.html'>Advanced Features</a><a href='sections/state-machine.html'>State Machine</a><a href='sections/library-exports-constants-and-enums.html'>Library Exports (Constants and Enums)</a><a href='sections/library-exports-core-api.html'>Library Exports (Core API)</a><a href='sections/best-practices.html'>Best Practices</a><a href='sections/project-example-hello-world.html'>Project Example: Hello World</a><a href='sections/project-example-todoapp-from-todoapp-js.html'>Project Example: TodoApp (from todoapp.js)</a><a href='sections/summary.html'>Summary</a><a href='sections/new-project-checklist.html'>New Project Checklist</a><a href='sections/resources.html'>Resources</a><a href='sections/end-to-end-hello-world-example.html'>End-to-End Hello World Example</a>
+    </nav>
+    <section>
+      <h3>Creating a Component</h3>
+<p>Components extend the `Component` class:</p>
+<p>@@CODEBLOCK0@@</p>
+<h3>Component Context ($c()) Reference</h3>
+<p>Every component has access to a context object via `this.$c()` that provides the full API below:</p>
+<p>| Method | Purpose |</p>
+<p>|--------|---------|</p>
+<p>| `getContext()` | Access the componentâ€™s IoC context |</p>
+<p>| `getValue()` | Get the current model/value for this component |</p>
+<p>| `getObject(name, ...args)` | Resolve an object from the IoC container |</p>
+<p>| `getLogger()` | Get the component-scoped logger |</p>
+<p>| `getEl()` | Get the root DOM element for this component |</p>
+<p>| `getId()` | Unique runtime id for the component instance |</p>
+<p>| `getName()` | Component name (often the class name) |</p>
+<p>| `getParent()` | Parent component (or null at root) |</p>
+<p>| `getPrefix()` | Binding prefix used by the template extractor |</p>
+<p>| `getWatchScope()` | Watch scope for expression evaluation |</p>
+<p>| `scope()` | Access the componentâ€™s template scope |</p>
+<p>| `properties()` | Access runtime properties (`PropertyKeys` map) |</p>
+<p>| `metadata()` | Access metadata storage helpers (`get`, `has`) |</p>
+<p>| `onExpressionValueChange(expr, callback, [thisArg], [mutable])` | Watch expression changes and run a callback |</p>
+<p>| `onMessage(messageName)` | Subscribe to messages (chain `.forChannel(...)`) |</p>
+<p>| `onInterval(delayMs)` | Run a callback on a repeating interval |</p>
+<p>| `send(messageName, [payload], [startFrom])` | Send a message (chain `.onChannel(...)`) |</p>
+<p>| `tell(name, payload)` | Send an internal framework message |</p>
+<p>| `sync()` | Trigger a digestion/sync cycle |</p>
+<p>| `evaluate(expression)` | Evaluate an expression in component scope |</p>
+<p>| `isMounted()` | Whether the component is currently mounted |</p>
+<p>| `isConnected()` | Whether the component is connected in the tree |</p>
+<p>| `regions()` | Access region APIs (set/get/has) |</p>
+<p>| `forSeries(name)` | Access a `c-series` by name |</p>
+<p>| `forElement(name)` | Access a named element registered via `c-id` |</p>
+<p>| `forForm(name)` | Access a named form registered via `c-id` |</p>
+<p>| `forForms()` | Access all forms registered on the component |</p>
+<p>| `createFilter(expression)` | Build a reactive filtered collection |</p>
+<h3>Regions() API</h3>
+<p>@@CODEBLOCK0@@</p>
+<p>---</p>
+    </section>
+  </main>
+</body>
+</html>
