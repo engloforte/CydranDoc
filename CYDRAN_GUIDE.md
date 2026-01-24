@@ -276,6 +276,27 @@ Invalid (multiple top-level nodes):
 - An **HTMLElement** (pre-built DOM to use as the root)
 - A **renderer object** with a `render()` function
 
+**Renderer objects** let you generate the DOM programmatically. The object must provide a `render()` method that returns a **single root `HTMLElement`** for the component. The return value is used as the component’s root element, so it must be:
+- An actual `HTMLElement` (not a string, not a `DocumentFragment`).
+- A **single root** (no sibling root nodes).
+- Fully constructed before returning (children appended inside the root).
+
+Example:
+```javascript
+class FancyBox extends cydran.Component {
+  constructor() {
+    super({
+      render() {
+        const el = document.createElement('div');
+        el.className = 'fancybox';
+        el.textContent = 'Rendered by function';
+        return el;
+      }
+    });
+  }
+}
+```
+
 ### Retrieving Templates
 
 Use a helper function to retrieve template HTML:
@@ -300,6 +321,58 @@ class App extends Component {
   }
 }
 ```
+
+### Template Sources (All Supported Approaches Used in This Project)
+
+You can supply templates in several ways. These are all valid and supported by Cydran, and we have used each in this project:
+
+1) **Inline `<template>` tags in `index.html`**
+   - Define templates in the page and load them by id.
+   - Works well for small apps or quick prototypes.
+
+```html
+<template id="app-root">
+  <div class="app-root">...</div>
+</template>
+```
+
+```javascript
+const template = id =>
+  document.querySelector(`template[id="${id}"]`).innerHTML.trim();
+
+super(template("app-root"));
+```
+
+2) **Separate HTML files imported as raw strings (Vite/esbuild)**
+   - Put each component template in its own `.html` file.
+   - Import the file as a raw string and pass it directly to `super(...)`.
+   - The HTML file can be either:
+     - a **fragment** (preferred now), or
+     - a `<template>` wrapper (older style) that you strip yourself before passing.
+
+```javascript
+import templateHtml from "./app-root.html?raw";
+
+// If the file is a fragment, pass it directly.
+super(templateHtml);
+```
+
+3) **Central template registration (legacy pattern)**
+   - Import raw template files, register them, then load by id in components.
+   - Useful when you want a single place to manage templates or keep `super(...)` calls consistent.
+
+```javascript
+import appRootTemplate from "./components/app-root/app-root.html?raw";
+import { registerTemplates } from "./lib/register-templates";
+
+registerTemplates([appRootTemplate]);
+
+super(template("app-root"));
+```
+
+**Notes**
+- If you pass a fragment directly to `super(...)`, it should contain **one top-level element**.
+- If you use `<template>` wrappers, ensure you extract the inner HTML before passing to `super(...)`.
 
 ### Template Syntax
 
