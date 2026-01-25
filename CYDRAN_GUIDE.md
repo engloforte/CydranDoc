@@ -221,6 +221,16 @@ regions().setByObjectId(name, objectId, [fallbackObjectId])
 
 ---
 
+
+## Markers & Placeholders
+
+Cydran uses a few structural markers/placeholders in the DOM. These are normal and help the framework manage dynamic insertion/removal.
+
+- **`<c-region>`**: A placeholder tag that is replaced by the mounted component for that region.
+- **`<c-series>`**: A placeholder tag that is replaced by a series insertion point.
+- **`<!--SS-->` / `<!--SE-->`**: Comment markers that bound the start/end of a `c-series`.
+- **`c-if`**: When a `c-if` condition is false, Cydran removes the element from the DOM; it may use internal markers to restore it later (implementation detail).
+- **`data-template-id="..."`**: A project convention for debugging template roots (not a framework requirement).
 ## Templates
 
 ### Template Definition
@@ -484,6 +494,17 @@ Notes:
 - `lock` is treated as a boolean attribute.
 
 ### Series Placement (c-series)
+**DOM markers (`<!--SS-->` / `<!--SE-->`)**
+When Cydran manages a `c-series`, it may insert HTML comment markers like `<!--SS-->` and `<!--SE-->` in the DOM. These mark the start/end boundaries for the series so the framework can insert, remove, and reorder components without needing a wrapping element. Seeing these comments inside a `c-series` container is normal.
+**Using getObject with series items**
+When inserting components into a series, use `getObject(name, ...args)` to pass instance arguments to prototypes registered with `withArgument(index)`.
+
+Example:
+```javascript
+const series = this.$c().forSeries('nodes');
+const comp = this.$c().getObject('nodeItem', [enrichedNode]);
+series.insertLast(comp);
+```
 
 For multiple child components, use `c-series` plus `forSeries(...)`.
 
@@ -632,6 +653,33 @@ this.$c().onMessage(HIDE_MESSAGE)
 
 `invoke(...)` calls your handler with the component instance as `this`. Passing a method reference (e.g. `this.removeTodo`) is fine because Cydran binds `this` to the component when invoking. Arrow functions still work, but they ignore rebinding and capture `this` lexically instead.
 
+### Debugging Messaging
+
+When debugging message flow, log before sending and inside the receive handler. Include the message name, channel, and propagation:
+
+```javascript
+// Send
+console.log('db:SEND', TREE_UPDATED, APP_CHANNEL, cydran.To.DESCENDANTS);
+this.$c()
+  .send(TREE_UPDATED, payload)
+  .onChannel(APP_CHANNEL)
+  .withPropagation(cydran.To.DESCENDANTS);
+
+// Receive
+this.$c()
+  .onMessage(TREE_UPDATED)
+  .forChannel(APP_CHANNEL)
+  .invoke(() => {
+    console.log('db:RECV', TREE_UPDATED, APP_CHANNEL, 'propagation=n/a');
+    // handler code...
+  });
+```
+
+Tips:
+- Use consistent prefixes (`db:SEND`, `db:RECV`) so you can filter in the console.
+- Log payload sizes or keys rather than full objects when payloads are large.
+- If a message seems "lost", verify the channel and propagation target match the sender.
+
 ### Message-Driven Patterns
 
 Messages enable:
@@ -705,6 +753,30 @@ function rootCapability(context) {
 Components defined with dependencies receive them in the constructor.
 
 ### Accessing Singletons
+### getObject(name, ...args)
+
+`getObject` resolves an object from the IoC container. For singletons it returns the shared instance; for prototypes it creates a new instance.
+
+**Purpose of the arguments (`...args`)**
+- These are **instance arguments** passed at resolve-time.
+- They are only used if the component was registered with `argumentsBuilder().withArgument(index)`.
+- Each `withArgument(index)` pulls from the `...args` array in the same position.
+
+Example:
+```javascript
+// Registration
+context.registerPrototype(
+  "nodeItem",
+  NodeItem,
+  cydran.argumentsBuilder().withArgument(0).build()
+);
+
+// Resolve
+const comp = this.$c().getObject("nodeItem", [enrichedNode]);
+// inside NodeItem constructor, argument 0 === enrichedNode
+```
+
+If you want fixed values, use `withConstant(...)` instead of `withArgument(...)`.
 
 Get registered singletons:
 
@@ -818,6 +890,31 @@ const PROPERTIES = {
 };
 ```
 
+### Debug Output (Optional)
+
+Logging output is optional and fully controlled by properties. Set a log level in the properties object passed to `cydran.create(...)`:
+
+```javascript
+const PROPERTIES = {
+  [cydran.PropertyKeys.CYDRAN_LOG_LEVEL]: 'debug'
+};
+```
+
+Common levels: `trace`, `debug`, `info`, `warn`, `error`, `fatal`, `disabled`.
+
+Notes:
+- If logging is too noisy, raise the level (e.g., `warn`) or set `disabled`.
+- You can customize preamble order with `CYDRAN_LOG_PREAMBLE_ORDER` (e.g., `time:level:name`).
+- If you supply custom appenders, ensure `consoleAppender` is included unless you explicitly suppress it.
+
+Example with warnings only:
+
+```javascript
+const PROPERTIES = {
+  [cydran.PropertyKeys.CYDRAN_LOG_LEVEL]: 'warn',
+  [cydran.PropertyKeys.CYDRAN_LOG_PREAMBLE_ORDER]: 'time:level:name'
+};
+```
 ### Scope Functions
 
 Register reusable functions accessible from templates via `s()`:
@@ -1370,3 +1467,7 @@ stage.addInitializer(null, s => {
 });
 stage.start();
 ```
+
+
+
+
