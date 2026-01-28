@@ -231,6 +231,61 @@ Cydran uses a few structural markers/placeholders in the DOM. These are normal a
 - **`<!--SS-->` / `<!--SE-->`**: Comment markers that bound the start/end of a `c-series`.
 - **`c-if`**: When a `c-if` condition is false, Cydran removes the element from the DOM; it may use internal markers to restore it later (implementation detail).
 - **`data-template-id="..."`**: A project convention for debugging template roots (not a framework requirement).
+
+## Custom Elements
+
+Cydran registers the following custom elements. These are real custom tags (via `customElements.define`) and are parsed by the framework during template compilation.
+
+### `<c-region>`
+
+Region placeholder used to mount child components.
+
+| Attribute | Type | Purpose | Notes |
+|----------|------|---------|-------|
+| `name` | string | Names the region so it can be targeted from code | If omitted, Cydran generates an anonymous region name |
+| `path` | string | Requestable object path to a component in the IoC context | If set, the region auto-loads that component on mount |
+| `value` | expression | Expression providing item/value context to the child component | Used as the region's item function (`setItemFn`) |
+| `lock` | boolean attribute | Locks the region from further updates | If `true`, updates throw `LockedRegionError` |
+
+Notes:
+- If `path` is set and `name` is not, the region is locked by default (cannot be changed later).
+- `lock` is treated as a boolean attribute.
+
+Example:
+```html
+<c-region name="detailsRegion" path="detailsPanel" lock></c-region>
+```
+
+### `<c-series>`
+
+Series placeholder used to insert and manage ordered child components.
+
+| Attribute | Type | Purpose | Notes |
+|----------|------|---------|-------|
+| `name` | string | Names the series so it can be targeted from code | Use with `this.$c().forSeries(name)` |
+
+Example:
+```html
+<c-series name="nodes"></c-series>
+```
+
+```javascript
+const series = this.$c().forSeries("nodes");
+series.insertLast(this.$c().getObject("nodeItem", [node]));
+```
+
+### `<c-component-styles>`
+
+Placeholder for component-scoped CSS. During compilation, this element is replaced by a `<style>` tag that contains the component's styles (if any).
+
+| Attribute | Type | Purpose | Notes |
+|----------|------|---------|-------|
+| *(none)* | - | - | This tag is replaced with a `<style>` element |
+
+Example:
+```html
+<c-component-styles></c-component-styles>
+```
 ## Templates
 
 ### Template Definition
@@ -290,6 +345,21 @@ Invalid (multiple top-level nodes):
 - An actual `HTMLElement` (not a string, not a `DocumentFragment`).
 - A **single root** (no sibling root nodes).
 - Fully constructed before returning (children appended inside the root).
+
+### SVG Fragment Templates
+
+When your template is an **SVG fragment** (for example, a `<g>` block), a renderer helps ensure the fragment is parsed in the SVG namespace before Cydran binds it. This avoids browsers treating the markup as plain HTML and dropping SVG-specific attributes.
+
+Example:
+```javascript
+import { svgTemplateRenderer } from "../lib/template";
+
+class LinksLayer extends cydran.Component {
+  constructor() {
+    super(svgTemplateRenderer('<g class="links-layer"><g class="link-lines"></g></g>'));
+  }
+}
+```
 
 Example:
 ```javascript
@@ -480,18 +550,7 @@ For non-`c-` attributes, use `{{ ... }}` for reactive updates. Use `[[ ... ]]` f
 
 ### c-region Modifiers
 
-The `c-region` tag supports these modifiers (attributes):
-
-| Attribute | Purpose | Notes |
-|----------|---------|-------|
-| `name` | Names the region so it can be targeted from code | If omitted, Cydran generates an anonymous region name |
-| `path` | Requestable object path to a component in the IoC context | If set, the region auto-loads that component on mount |
-| `value` | Expression to provide item/value context to the child component | Used as the region's item function (`setItemFn`) |
-| `lock` | Locks the region from further updates | Boolean; if `true` updates to the region throw a LockedRegionError |
-
-Notes:
-- If `path` is set and `name` is not, the region is locked by default (cannot be changed later).
-- `lock` is treated as a boolean attribute.
+See **Custom Elements → `<c-region>`** for the full attribute table and examples.
 
 ### Series Placement (c-series)
 **DOM markers (`<!--SS-->` / `<!--SE-->`)**
