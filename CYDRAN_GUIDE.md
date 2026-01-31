@@ -708,6 +708,27 @@ this.$c().onMessage(HIDE_MESSAGE)
   });
 ```
 
+**Non-component receivers (services/brokers)**
+
+Non-component classes are not auto-subscribed to the messaging broker. If you inject a `Receiver` into a service, you must also inject a message subscriber and register the receiver:
+
+```javascript
+// registration
+context.registerSingleton(
+  'apiBroker',
+  ApiBroker,
+  argumentsBuilder().with('apiService').withReceiver().withTransmitter().withMessageSubscriber().build()
+);
+
+// in ApiBroker constructor
+constructor(api, rx, tx, subscribe) {
+  this.api = api;
+  this.rx = rx;
+  this.tx = tx;
+  subscribe(this.rx, this.rx.message);
+}
+```
+
 **`invoke` and `this`**
 
 `invoke(...)` calls your handler with the component instance as `this`. Passing a method reference (e.g. `this.removeTodo`) is fine because Cydran binds `this` to the component when invoking. Arrow functions still work, but they ignore rebinding and capture `this` lexically instead.
@@ -1184,19 +1205,165 @@ SCOPE_ITEM
 
 ## Library Exports (Core API)
 
-The Cydran build also exposes core classes and helpers:
+This project uses the full set of Cydran exports defined in `src/cydran.d.ts`. For completeness, all exported symbols are listed below.
 
-- `Component`, `ElementComponent`
-- `AbstractBehavior`, `AbstractValueBehavior`
+### Classes
+
+- `AbstractBehavior`
+- `AbstractValueBehavior`
+- `Component`
+- `ElementComponent`
+
+### Functions
+
 - `argumentsBuilder`
-- `create`, `noConflict`
+- `create`
+- `enumKeys`
 - `getLogger`
+- `isDefined`
+- `merge`
+- `noConflict`
+- `overlay`
+- `padLeft`
+- `padRight`
+- `requireNotNull`
+- `requireValid`
+- `setStrictTypeChecksEnabled`
 - `stateMachineBuilder`
 - `uuidV4`
-- `setStrictTypeChecksEnabled`
-- Utility helpers: `isDefined`, `requireNotNull`, `requireValid`, `merge`, `overlay`, `padLeft`, `padRight`, `enumKeys`
 
-These are stable entry points for building and composing components and infrastructure.
+### Interfaces and Types
+
+- `ActionContinuation`
+- `Actionable`
+- `Appender`
+- `ArgumentOption`
+- `ArgumentsResolvers`
+- `ArgumentsResolversBuilder`
+- `Attributes`
+- `Behavior`
+- `Builder`
+- `ComponentOptions`
+- `Context`
+- `DestinationContinuation`
+- `DigestableSource`
+- `DigestionCandidate`
+- `ElementOperations`
+- `Evaluatable`
+- `Filter`
+- `FilterBuilder`
+- `ForChannelContinuation`
+- `FormOperations`
+- `InternalComponentOptions`
+- `IntervalContinuation`
+- `IsLevelType`
+- `LimitOffsetFilter`
+- `Logger`
+- `Machine`
+- `MachineBuilder`
+- `MachineState`
+- `Mediator`
+- `Messagable`
+- `MetadataContinuation`
+- `MutableProperties`
+- `Nestable`
+- `Notifyable`
+- `OnContinuation`
+- `PagedFilter`
+- `PropFlagVals`
+- `Properties`
+- `Receivable`
+- `Receiver`
+- `RegionContinuation`
+- `Register`
+- `Releasable`
+- `Renderer`
+- `Scope`
+- `SendContinuation`
+- `Sendable`
+- `SeriesOperations`
+- `Stage`
+- `Tellable`
+- `Watchable`
+
+### Stage API (object returned by `create(...)`)
+
+The `create(...)` function returns a `Stage`. These are the available methods:
+
+- `getContext()`
+- `before()`
+- `after()`
+- `start()`
+- `setComponent(component)`
+- `setComponentByObjectId(componentName, defaultComponentName?)`
+- `isStarted()`
+- `addInitializer(thisObject, callback)`
+- `$release()`
+
+### Context API (object returned by `stage.getContext()`)
+
+`getContext()` returns a `Context`. These are the available methods:
+
+**Context methods**
+- `getChild(name)`
+- `hasChild(name)`
+- `addChild(name, initializer?)`
+- `removeChild(name)`
+- `getObject(id, ...instanceArguments)`
+- `getProperties()`
+- `getScope()`
+- `getRoot()`
+- `isRoot()`
+- `getParent()`
+- `registerImplicit(id, template, options?)`
+- `getName()`
+- `getFullName()`
+- `addPreInitializer(thisObject, callback)`
+- `addInitializer(thisObject, callback)`
+- `addDisposer(thisObject, callback)`
+- `configure(callback, thisObject?)`
+- `addListener(thisObject, callback)`
+- `removeListener(thisObject, callback)`
+
+**Messaging (from Sendable/Tellable/Receivable)**
+- `send(propagation, channelName, messageName, payload?, startFrom?)`
+- `message(channelName, messageName, payload?)`
+- `tell(name, payload?)`
+
+**Registration (from Register)**
+- `registerConstant(id, instance)`
+- `registerPrototype(id, classInstance, resolvers?, localResolution?)`
+- `registerPrototypeWithFactory(id, factoryFn, resolvers?, localResolution?)`
+- `registerSingleton(id, classInstance, resolvers?, localResolution?)`
+- `registerSingletonWithFactory(id, factoryFn, resolvers?, localResolution?)`
+- `hasRegistration(id)`
+- `expose(id)`
+
+**Lifecycle (from Releasable)**
+- `$release()`
+
+### Type Aliases
+
+- `BehaviorAttributeConverters`
+- `BiConsumer`
+- `BiPredicate`
+- `CallBackThisObject`
+- `Consumer`
+- `FieldValidations`
+- `MessageCallback`
+- `Predicate`
+- `PropertyChangeCallback`
+- `PropertyChangeFallbackCallback`
+- `PropertyFallBackSubscriber`
+- `PropertyProvider`
+- `PropertySubscriber`
+- `SimpleMap`
+- `Transmitter`
+- `Type`
+- `VarConsumer`
+- `VarPredicate`
+
+These are stable entry points for building and composing components, behaviors, and infrastructure.
 
 ## Best Practices
 
