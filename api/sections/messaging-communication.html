@@ -47,6 +47,23 @@ code{padding:0 4px}</style>
 <h3>Receiving Messages</h3>
 <p>Subscribe to messages in the constructor:</p>
 <p>@@CODEBLOCK0@@</p>
+<p><strong>Non-component receivers (services/brokers)</strong></p>
+<p>Non-component classes are not auto-subscribed to the messaging broker. If you inject a <code>Receiver</code> into a service, you must also inject a message subscriber and register the receiver:</p>
+<pre><code>// registration
+context.registerSingleton(
+  'apiBroker',
+  ApiBroker,
+  argumentsBuilder().with('apiService').withReceiver().withTransmitter().withMessageSubscriber().build()
+);
+
+// in ApiBroker constructor
+constructor(api, rx, tx, subscribe) {
+  this.api = api;
+  this.rx = rx;
+  this.tx = tx;
+  subscribe(this.rx, this.rx.message);
+}
+</code></pre>
 <p>**`invoke` and `this`**</p>
 <p>`invoke(...)` calls your handler with the component instance as `this`. Passing a method reference (e.g. `this.removeTodo`) is fine because Cydran binds `this` to the component when invoking. Arrow functions still work, but they ignore rebinding and capture `this` lexically instead.</p>
 <h3>Message-Driven Patterns</h3>
